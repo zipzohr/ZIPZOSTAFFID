@@ -43,10 +43,6 @@
 
 <!-- PUBLIC VIEW (QR scan) -->
 <div class="card hide" id="publicView">
-  <div class="warnBox tiny">
-    ⚠️ FULL PUBLIC view is ON (shows all fields on QR scan). Use only with staff consent.
-  </div>
-  <div class="hr"></div>
   <div class="center" id="publicLoading">Loading…</div>
 </div>
 
@@ -319,10 +315,6 @@ if (staffParam) {
       `;
 
       publicView.innerHTML = `
-        <div class="warnBox tiny">
-          ⚠️ FULL PUBLIC view is ON. To hide sensitive data, set <code>FULL_PUBLIC_VIEW = false</code> in this file.
-        </div>
-        <div class="hr"></div>
         ${header}
         <div style="display:grid;gap:10px">${body}</div>
       `;
