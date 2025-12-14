@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Staff ID System (One File • Full Public)</title>
+<title>Staff ID System (One File • GitHub Pages • Photo Folder)</title>
 <style>
   :root{--bg:#f6f7fb;--card:#fff;--muted:#667085;--line:#e5e7eb;--ink:#111827;}
   body{font-family:system-ui,Arial;margin:0;background:var(--bg);color:var(--ink)}
@@ -35,6 +35,7 @@
   .v{font-size:14px;font-weight:650;word-break:break-word}
   #qr canvas{border-radius:12px;border:1px solid var(--line)}
   .warnBox{background:#fff4c5;border:1px solid #f5e6a4;border-radius:14px;padding:10px 12px}
+  code{background:#f3f4f6;padding:2px 6px;border-radius:8px}
 </style>
 </head>
 <body>
@@ -43,8 +44,7 @@
 <!-- PUBLIC VIEW (QR scan) -->
 <div class="card hide" id="publicView">
   <div class="warnBox tiny">
-    ⚠️ You selected <b>FULL PUBLIC</b> view (shows all staff fields on QR scan).
-    Make sure you have staff consent before publishing sensitive personal data.
+    ⚠️ FULL PUBLIC view is ON (shows all fields on QR scan). Use only with staff consent.
   </div>
   <div class="hr"></div>
   <div class="center" id="publicLoading">Loading…</div>
@@ -64,7 +64,8 @@
   </div>
 
   <div class="warnBox tiny" style="margin-top:10px">
-    ⚠️ Important: Open this file on <b>http/https</b> (Hosting or localhost). If you open with <b>file://</b>, photo upload will fail (CORS / origin null).<br/><b>GitHub Pages note:</b> If you see CORS errors on photo upload, you must allow CORS for your GitHub domain on the Storage bucket (one-time).
+    ✅ Photo system: Upload staff photos to <b>/photos/</b> in your GitHub repo (public).<br/>
+    Example: <code>photos/007.jpg</code> then QR view will show the image.
   </div>
 
   <div class="hr"></div>
@@ -99,22 +100,22 @@
     <div class="row">
       <div>
         <label>Name (Myanmar)</label>
-        <input id="nameMm" placeholder="ဟနင် ယဝိုင် ဇော်">
+        <input id="nameMm" placeholder="မြန်မာအမည်">
       </div>
       <div>
         <label>Name (English)</label>
-        <input id="nameEn" placeholder="HNIN YAWAI ZAW">
+        <input id="nameEn" placeholder="ENGLISH NAME">
       </div>
     </div>
 
     <div class="row">
       <div>
         <label>Date of Birth (YYYY-MM-DD)</label>
-        <input id="dob" placeholder="1999-01-31">
+        <input id="dob" placeholder="1998-12-09">
       </div>
       <div>
         <label>Age</label>
-        <input id="age" placeholder="25">
+        <input id="age" placeholder="27">
       </div>
     </div>
 
@@ -122,16 +123,16 @@
     <textarea id="addrMm" placeholder="Myanmar address..."></textarea>
 
     <label>Overseas Address</label>
-    <textarea id="addrOs" placeholder="Thailand/Overseas address..."></textarea>
+    <textarea id="addrOs" placeholder="Overseas address..."></textarea>
 
     <div class="row">
       <div>
         <label>NRC / ID Number</label>
-        <input id="nrc" placeholder="(e.g., 12/XYZ(N)123456)">
+        <input id="nrc" placeholder="NRC number">
       </div>
       <div>
         <label>Passport Number</label>
-        <input id="passport" placeholder="AB1234567">
+        <input id="passport" placeholder="Passport number">
       </div>
     </div>
 
@@ -174,14 +175,15 @@
         <input id="branch" placeholder="Bangkok">
       </div>
       <div>
-        <label>Photo (upload)</label>
-        <input type="file" id="photo" accept="image/*">
+        <label>Photo URL (optional)</label>
+        <input id="photoUrl" placeholder="Leave blank to auto-use /photos/{StaffID}.jpg">
+        <div class="tiny">If blank, system uses: <code>(your site)/photos/{StaffID}.jpg</code></div>
       </div>
     </div>
 
     <div style="margin:10px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <img id="preview" class="avatar" alt="photo preview"/>
-      <div class="tiny" id="photoInfo">No photo selected</div>
+      <div class="tiny" id="photoInfo">No photo URL yet</div>
     </div>
 
     <div class="btnRow" style="margin-top:10px">
@@ -201,6 +203,9 @@
       </div>
       <div class="tiny" id="qrLink" style="margin-top:8px"></div>
     </div>
+
+    <div class="hr"></div>
+    <div class="tiny center" id="debug"></div>
   </div>
 </div>
 
@@ -210,19 +215,20 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm";
 
-// ====== CONFIG ======
 // FULL PUBLIC MODE: shows ALL fields in QR scan view.
 const FULL_PUBLIC_VIEW = true;
 
-// ====== Firebase config ======
+// ✅ GitHub Pages path-safe base (works for both user site and project site)
+const BASE_PATH = location.pathname.endsWith("/") ? location.pathname.slice(0, -1) : location.pathname;
+const SITE_BASE = location.origin + BASE_PATH.replace(/\/[^\/]*$/, ""); // folder of this HTML
+
+// Firebase config (Firestore only; photos served from GitHub /photos/)
 const firebaseConfig = {
   apiKey: "AIzaSyBMQJZ-NC8g9KWXm6OUy655stUxYM95vbE",
   authDomain: "staff-id-1035f.firebaseapp.com",
   projectId: "staff-id-1035f",
-  storageBucket: "staff-id-1035f.appspot.com",
   messagingSenderId: "804753008406",
   appId: "1:804753008406:web:c9bc7254f2b97f17419237"
 };
@@ -230,7 +236,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 const qs = new URLSearchParams(location.search);
 const staffParam = (qs.get("id") || "").trim();
@@ -245,38 +250,47 @@ function pillClass(st){
   return "badge warn";
 }
 function esc(s=""){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
 function kvRow(k,v){
   const val = (v===undefined || v===null || v==="") ? "-" : esc(v);
   return `<div class="kv"><div class="k">${esc(k)}</div><div class="v">${val}</div></div>`;
+}
+function defaultPhotoUrlFor(id){
+  // Works on:
+  // - https://zipzohr.github.io/  (user site)
+  // - https://zipzohr.github.io/REPO/  (project site)
+  return `${SITE_BASE}/photos/${encodeURIComponent(id)}.jpg`;
+}
+function bestPhotoUrl(d, id){
+  const saved = (d && d.photoUrl) ? String(d.photoUrl).trim() : "";
+  return saved || defaultPhotoUrlFor(id);
 }
 
 /* ---------- PUBLIC MODE (QR scan) ---------- */
 if (staffParam) {
   publicView.classList.remove("hide");
 
-  const snap = await getDoc(doc(db, "staff", staffParam));
-  if (!snap.exists()) {
-    publicView.innerHTML = "<p class='center'>❌ Staff not found</p>";
-  } else {
-    const d = snap.data();
+  try{
+    const snap = await getDoc(doc(db, "staff", staffParam));
+    if (!snap.exists()) {
+      publicView.innerHTML = "<p class='center'>❌ Staff not found</p>";
+    } else {
+      const d = snap.data();
+      const st = (d.status || "UNKNOWN").toUpperCase();
+      const photo = bestPhotoUrl(d, staffParam);
 
-    const st = (d.status || "UNKNOWN").toUpperCase();
-    const header = `
-      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-        <img src="${esc(d.photoUrl || "")}" class="avatar" onerror="this.style.display='none'"/>
-        <div>
-          <h2 style="margin:0">${esc(d.nameEn || d.nameMm || d.name || "-")}</h2>
-          <div class="tiny" style="margin-top:4px">${esc(d.position || "-")} • ${esc(d.branch || "-")}</div>
-          <div style="margin-top:8px"><span class="${pillClass(st)}">${esc(st)}</span></div>
+      const header = `
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <img src="${esc(photo)}" class="avatar" onerror="this.src='';this.style.display='none'"/>
+          <div>
+            <h2 style="margin:0">${esc(d.nameEn || d.nameMm || "-")}</h2>
+            <div class="tiny" style="margin-top:4px">${esc(d.position || "-")} • ${esc(d.branch || "-")}</div>
+            <div style="margin-top:8px"><span class="${pillClass(st)}">${esc(st)}</span></div>
+          </div>
         </div>
-      </div>
-      <div class="hr"></div>
-    `;
+        <div class="hr"></div>
+      `;
 
-    let body = "";
-    if (FULL_PUBLIC_VIEW) {
-      body = `
+      const body = FULL_PUBLIC_VIEW ? `
         ${kvRow("Staff ID", d.staffId || staffParam)}
         ${kvRow("Name (Myanmar)", d.nameMm)}
         ${kvRow("Name (English)", d.nameEn)}
@@ -293,9 +307,8 @@ if (staffParam) {
         ${kvRow("Telegram ID", d.telegram)}
         ${kvRow("Work Start Date", d.startDate)}
         ${kvRow("Branch / Office", d.branch)}
-      `;
-    } else {
-      body = `
+        ${kvRow("Photo URL", d.photoUrl || "(auto) " + photo)}
+      ` : `
         ${kvRow("Staff ID", d.staffId || staffParam)}
         ${kvRow("Name (Myanmar)", d.nameMm)}
         ${kvRow("Name (English)", d.nameEn)}
@@ -304,22 +317,28 @@ if (staffParam) {
         ${kvRow("Branch / Office", d.branch)}
         ${kvRow("Work Start Date", d.startDate)}
       `;
-    }
 
-    publicView.innerHTML = `
-      <div class="warnBox tiny">
-        ⚠️ FULL PUBLIC view is ON. To hide sensitive data, set <code>FULL_PUBLIC_VIEW = false</code> in this file.
-      </div>
-      <div class="hr"></div>
-      ${header}
-      <div style="display:grid;gap:10px">${body}</div>
-    `;
+      publicView.innerHTML = `
+        <div class="warnBox tiny">
+          ⚠️ FULL PUBLIC view is ON. To hide sensitive data, set <code>FULL_PUBLIC_VIEW = false</code> in this file.
+        </div>
+        <div class="hr"></div>
+        ${header}
+        <div style="display:grid;gap:10px">${body}</div>
+      `;
+    }
+  }catch(e){
+    console.error(e);
+    publicView.innerHTML = "<p class='center'>❌ Error loading staff data. Check Firestore rules.</p>";
   }
 }
 
 /* ---------- ADMIN MODE ---------- */
 else {
   adminView.classList.remove("hide");
+
+  const debug = document.getElementById("debug");
+  debug.textContent = `Site base: ${SITE_BASE}`;
 
   const who = document.getElementById("who");
   const signOutBtn = document.getElementById("signOutBtn");
@@ -349,7 +368,7 @@ else {
   const telegram = document.getElementById("telegram");
   const startDate = document.getElementById("startDate");
   const branch = document.getElementById("branch");
-  const photo = document.getElementById("photo");
+  const photoUrlInput = document.getElementById("photoUrl");
   const preview = document.getElementById("preview");
   const photoInfo = document.getElementById("photoInfo");
 
@@ -361,9 +380,6 @@ else {
   const downloadQR = document.getElementById("downloadQR");
   const copyLink = document.getElementById("copyLink");
   const qrLink = document.getElementById("qrLink");
-
-  let photoFile = null;
-  let existingPhotoUrl = "";
 
   function currentPublicUrl(){
     const id = (staffId.value||"").trim();
@@ -389,8 +405,22 @@ else {
     };
   }
 
-  staffId.addEventListener("input", renderQR);
+  function refreshPhotoPreview(){
+    const id = (staffId.value||"").trim();
+    const url = (photoUrlInput.value||"").trim() || (id ? defaultPhotoUrlFor(id) : "");
+    if(url){
+      preview.src = url;
+      photoInfo.textContent = `Using: ${url}`;
+    }else{
+      preview.src = "";
+      photoInfo.textContent = "No photo URL yet";
+    }
+  }
+
+  staffId.addEventListener("input", ()=>{ renderQR(); refreshPhotoPreview(); });
+  photoUrlInput.addEventListener("input", refreshPhotoPreview);
   renderQR();
+  refreshPhotoPreview();
 
   copyLink.addEventListener("click", async ()=>{
     const url = currentPublicUrl();
@@ -403,16 +433,6 @@ else {
     const url = currentPublicUrl();
     if(!url) return alert("Enter Staff ID first");
     window.open(url, "_blank", "noopener");
-  });
-
-  photo.addEventListener("change", ()=>{
-    photoFile = photo.files && photo.files[0] ? photo.files[0] : null;
-    if (photoFile) {
-      preview.src = URL.createObjectURL(photoFile);
-      photoInfo.textContent = `Selected: ${photoFile.name}`;
-    } else {
-      photoInfo.textContent = "No photo selected";
-    }
   });
 
   function clearForm(){
@@ -433,23 +453,17 @@ else {
     telegram.value = "";
     startDate.value = "";
     branch.value = "";
-    photo.value = "";
-    photoFile = null;
-    existingPhotoUrl = "";
+    photoUrlInput.value = "";
     preview.src = "";
-    photoInfo.textContent = "No photo selected";
+    photoInfo.textContent = "No photo URL yet";
     renderQR();
+    refreshPhotoPreview();
   }
-
   clearBtn.addEventListener("click", clearForm);
 
   loginBtn.addEventListener("click", async ()=>{
-    try{
-      await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
-    }catch(e){
-      console.error(e);
-      alert("Login failed");
-    }
+    try{ await signInWithEmailAndPassword(auth, email.value.trim(), password.value); }
+    catch(e){ console.error(e); alert("Login failed"); }
   });
 
   resetBtn.addEventListener("click", async ()=>{
@@ -458,15 +472,10 @@ else {
       if(!em) return alert("Enter email first");
       await sendPasswordResetEmail(auth, em);
       alert("Reset email sent");
-    }catch(e){
-      console.error(e);
-      alert("Reset failed");
-    }
+    }catch(e){ console.error(e); alert("Reset failed"); }
   });
 
-  signOutBtn.addEventListener("click", async ()=>{
-    await signOut(auth);
-  });
+  signOutBtn.addEventListener("click", async ()=>{ await signOut(auth); });
 
   onAuthStateChanged(auth, (user)=>{
     if (!user){
@@ -480,17 +489,12 @@ else {
     adminBox.classList.remove("hide");
   });
 
-  async function loadExisting(id){
-    const snap = await getDoc(doc(db, "staff", id));
-    if(!snap.exists()) return null;
-    return snap.data();
-  }
-
   loadBtn.addEventListener("click", async ()=>{
     const id = (staffId.value||"").trim();
     if(!id) return alert("Enter Staff ID first");
-    const d = await loadExisting(id);
-    if(!d) return alert("Staff not found");
+    const snap = await getDoc(doc(db, "staff", id));
+    if(!snap.exists()) return alert("Staff not found");
+    const d = snap.data();
 
     status.value = (d.status || "ACTIVE").toUpperCase();
     nameMm.value = d.nameMm || "";
@@ -508,36 +512,20 @@ else {
     telegram.value = d.telegram || "";
     startDate.value = d.startDate || "";
     branch.value = d.branch || "";
-
-    existingPhotoUrl = d.photoUrl || "";
-    if(existingPhotoUrl){
-      preview.src = existingPhotoUrl;
-      photoInfo.textContent = "Existing photo loaded (upload new to replace)";
-    } else {
-      preview.src = "";
-      photoInfo.textContent = "No photo on record";
-    }
-    await renderQR();
+    photoUrlInput.value = d.photoUrl || "";
+    renderQR();
+    refreshPhotoPreview();
   });
 
   saveBtn.addEventListener("click", async ()=>{
     const id = (staffId.value||"").trim();
     if(!id) return alert("Staff ID required");
 
-    if (location.origin === "null") {
-      return alert("Please open from Hosting or localhost (http/https). Do not open with file://");
-    }
-
-    let photoUrl = existingPhotoUrl || "";
+    // Photo URL strategy: use input URL if provided, otherwise auto /photos/{id}.jpg
+    const inputUrl = (photoUrlInput.value||"").trim();
+    const photoUrl = inputUrl || defaultPhotoUrlFor(id);
 
     try{
-      if (photoFile) {
-        const ext = (photoFile.name.split(".").pop() || "jpg").toLowerCase();
-        const sref = ref(storage, `staff/${encodeURIComponent(id)}.${ext}`);
-        await uploadBytes(sref, photoFile, { contentType: photoFile.type || "image/jpeg" });
-        photoUrl = await getDownloadURL(sref);
-      }
-
       await setDoc(doc(db, "staff", id), {
         staffId: id,
         status: (status.value||"ACTIVE").toUpperCase(),
@@ -556,15 +544,15 @@ else {
         telegram: telegram.value.trim(),
         startDate: startDate.value.trim(),
         branch: branch.value.trim(),
-        photoUrl: photoUrl,
+        photoUrl: inputUrl, // store only if you explicitly set; otherwise leave blank
         updatedAt: new Date().toISOString()
       }, { merge: true });
 
-      existingPhotoUrl = photoUrl;
+      refreshPhotoPreview();
       alert("✅ Saved");
     }catch(e){
       console.error(e);
-      alert("❌ Save failed. Check: (1) Hosting (not file://) (2) Firestore/Storage rules");
+      alert("❌ Save failed. Check Firestore rules / login.");
     }
   });
 }
