@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Staff ID System (One File • GitHub Pages • Photo Folder)</title>
+<title>Staff ID System</title>
 <style>
   :root{--bg:#f6f7fb;--card:#fff;--muted:#667085;--line:#e5e7eb;--ink:#111827;}
   body{font-family:system-ui,Arial;margin:0;background:var(--bg);color:var(--ink)}
@@ -34,178 +34,50 @@
   .k{font-size:12px;color:var(--muted);font-weight:800}
   .v{font-size:14px;font-weight:650;word-break:break-word}
   #qr canvas{border-radius:12px;border:1px solid var(--line)}
-  .warnBox{background:#fff4c5;border:1px solid #f5e6a4;border-radius:14px;padding:10px 12px}
-  code{background:#f3f4f6;padding:2px 6px;border-radius:8px}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<!-- PUBLIC VIEW (QR scan) -->
+<!-- PUBLIC VIEW -->
 <div class="card hide" id="publicView">
-  <div class="warnBox tiny">
-    ⚠️ FULL PUBLIC view is ON (shows all fields on QR scan). Use only with staff consent.
-  </div>
-  <div class="hr"></div>
   <div class="center" id="publicLoading">Loading…</div>
 </div>
 
 <!-- ADMIN VIEW -->
 <div class="card hide" id="adminView">
   <div class="top">
-    <div>
-      <h2>Admin • Staff Management</h2>
-      <div class="tiny" id="who">Not signed in</div>
-    </div>
-    <div class="btnRow" style="max-width:420px">
-      <button class="secondary" id="signOutBtn" type="button">Sign out</button>
-      <button class="secondary" id="openPublicBtn" type="button">Open Public Link</button>
-    </div>
+    <h2>Admin • Staff Management</h2>
+    <button class="secondary" id="signOutBtn">Sign out</button>
   </div>
-
-  <div class="warnBox tiny" style="margin-top:10px">
-    ✅ Photo system: Upload staff photos to <b>/photos/</b> in your GitHub repo (public).<br/>
-    Example: <code>photos/007.jpg</code> then QR view will show the image.
-  </div>
-
-  <div class="hr"></div>
 
   <div id="loginBox">
     <label>Email</label>
-    <input id="email" type="email" placeholder="admin@company.com" autocomplete="username">
+    <input id="email">
     <label>Password</label>
-    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
-    <div class="btnRow" style="margin-top:12px">
-      <button id="loginBtn" type="button">Login</button>
-      <button class="secondary" id="resetBtn" type="button">Reset Password</button>
-    </div>
+    <input id="password" type="password">
+    <button id="loginBtn">Login</button>
   </div>
 
   <div id="adminBox" class="hide">
-    <div class="row">
-      <div>
-        <label>Staff ID (Doc ID)</label>
-        <input id="staffId" placeholder="007 or STF001">
-      </div>
-      <div>
-        <label>Status</label>
-        <select id="status">
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="INACTIVE">INACTIVE</option>
-          <option value="SUSPENDED">SUSPENDED</option>
-        </select>
-      </div>
-    </div>
+    <label>Staff ID</label>
+    <input id="staffId">
 
-    <div class="row">
-      <div>
-        <label>Name (Myanmar)</label>
-        <input id="nameMm" placeholder="မြန်မာအမည်">
-      </div>
-      <div>
-        <label>Name (English)</label>
-        <input id="nameEn" placeholder="ENGLISH NAME">
-      </div>
-    </div>
+    <label>Name (English)</label>
+    <input id="nameEn">
 
-    <div class="row">
-      <div>
-        <label>Date of Birth (YYYY-MM-DD)</label>
-        <input id="dob" placeholder="1998-12-09">
-      </div>
-      <div>
-        <label>Age</label>
-        <input id="age" placeholder="27">
-      </div>
-    </div>
+    <label>Position</label>
+    <input id="position">
 
-    <label>Myanmar Address</label>
-    <textarea id="addrMm" placeholder="Myanmar address..."></textarea>
+    <label>Branch</label>
+    <input id="branch">
 
-    <label>Overseas Address</label>
-    <textarea id="addrOs" placeholder="Overseas address..."></textarea>
+    <label>Photo URL</label>
+    <input id="photoUrl" placeholder="/photos/007.jpg">
 
-    <div class="row">
-      <div>
-        <label>NRC / ID Number</label>
-        <input id="nrc" placeholder="NRC number">
-      </div>
-      <div>
-        <label>Passport Number</label>
-        <input id="passport" placeholder="Passport number">
-      </div>
-    </div>
+    <img id="preview" class="avatar">
 
-    <div class="row">
-      <div>
-        <label>Position</label>
-        <input id="position" placeholder="CUSTOMER SERVICE">
-      </div>
-      <div>
-        <label>Department</label>
-        <input id="department" placeholder="TRAVEL TOUR">
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>Phone</label>
-        <input id="phone" placeholder="+66...">
-      </div>
-      <div>
-        <label>Email</label>
-        <input id="staffEmail" placeholder="staff@company.com">
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>Telegram ID</label>
-        <input id="telegram" placeholder="@username">
-      </div>
-      <div>
-        <label>Work Start Date (YYYY-MM-DD)</label>
-        <input id="startDate" placeholder="2025-12-14">
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>Branch / Office</label>
-        <input id="branch" placeholder="Bangkok">
-      </div>
-      <div>
-        <label>Photo URL (optional)</label>
-        <input id="photoUrl" placeholder="Leave blank to auto-use /photos/{StaffID}.jpg">
-        <div class="tiny">If blank, system uses: <code>(your site)/photos/{StaffID}.jpg</code></div>
-      </div>
-    </div>
-
-    <div style="margin:10px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <img id="preview" class="avatar" alt="photo preview"/>
-      <div class="tiny" id="photoInfo">No photo URL yet</div>
-    </div>
-
-    <div class="btnRow" style="margin-top:10px">
-      <button id="loadBtn" type="button" class="secondary">Load Existing</button>
-      <button id="saveBtn" type="button">Save Staff</button>
-      <button id="clearBtn" type="button" class="secondary">Clear</button>
-    </div>
-
-    <div class="hr"></div>
-
-    <div>
-      <label>QR Preview (Public Link)</label>
-      <div id="qr"></div>
-      <div class="btnRow" style="margin-top:10px">
-        <button id="downloadQR" type="button" class="secondary">Download QR (PNG)</button>
-        <button id="copyLink" type="button" class="secondary">Copy Link</button>
-      </div>
-      <div class="tiny" id="qrLink" style="margin-top:8px"></div>
-    </div>
-
-    <div class="hr"></div>
-    <div class="tiny center" id="debug"></div>
+    <button id="saveBtn">Save</button>
   </div>
 </div>
 
@@ -213,18 +85,9 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm";
 
-// FULL PUBLIC MODE: shows ALL fields in QR scan view.
-const FULL_PUBLIC_VIEW = true;
-
-// ✅ GitHub Pages path-safe base (works for both user site and project site)
-const BASE_PATH = location.pathname.endsWith("/") ? location.pathname.slice(0, -1) : location.pathname;
-const SITE_BASE = location.origin + BASE_PATH.replace(/\/[^\/]*$/, ""); // folder of this HTML
-
-// Firebase config (Firestore only; photos served from GitHub /photos/)
 const firebaseConfig = {
   apiKey: "AIzaSyBMQJZ-NC8g9KWXm6OUy655stUxYM95vbE",
   authDomain: "staff-id-1035f.firebaseapp.com",
@@ -238,324 +101,60 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const qs = new URLSearchParams(location.search);
-const staffParam = (qs.get("id") || "").trim();
+const staffParam = qs.get("id");
 
 const publicView = document.getElementById("publicView");
 const adminView = document.getElementById("adminView");
 
-function pillClass(st){
-  st = (st||"").toUpperCase();
-  if (st === "ACTIVE") return "badge ok";
-  if (st === "INACTIVE") return "badge bad";
-  return "badge warn";
-}
-function esc(s=""){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function kvRow(k,v){
-  const val = (v===undefined || v===null || v==="") ? "-" : esc(v);
-  return `<div class="kv"><div class="k">${esc(k)}</div><div class="v">${val}</div></div>`;
-}
-function defaultPhotoUrlFor(id){
-  // Works on:
-  // - https://zipzohr.github.io/  (user site)
-  // - https://zipzohr.github.io/REPO/  (project site)
-  return `${SITE_BASE}/photos/${encodeURIComponent(id)}.jpg`;
-}
-function bestPhotoUrl(d, id){
-  const saved = (d && d.photoUrl) ? String(d.photoUrl).trim() : "";
-  return saved || defaultPhotoUrlFor(id);
-}
-
-/* ---------- PUBLIC MODE (QR scan) ---------- */
 if (staffParam) {
   publicView.classList.remove("hide");
-
-  try{
-    const snap = await getDoc(doc(db, "staff", staffParam));
-    if (!snap.exists()) {
-      publicView.innerHTML = "<p class='center'>❌ Staff not found</p>";
-    } else {
-      const d = snap.data();
-      const st = (d.status || "UNKNOWN").toUpperCase();
-      const photo = bestPhotoUrl(d, staffParam);
-
-      const header = `
-        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-          <img src="${esc(photo)}" class="avatar" onerror="this.src='';this.style.display='none'"/>
-          <div>
-            <h2 style="margin:0">${esc(d.nameEn || d.nameMm || "-")}</h2>
-            <div class="tiny" style="margin-top:4px">${esc(d.position || "-")} • ${esc(d.branch || "-")}</div>
-            <div style="margin-top:8px"><span class="${pillClass(st)}">${esc(st)}</span></div>
-          </div>
-        </div>
-        <div class="hr"></div>
-      `;
-
-      const body = FULL_PUBLIC_VIEW ? `
-        ${kvRow("Staff ID", d.staffId || staffParam)}
-        ${kvRow("Name (Myanmar)", d.nameMm)}
-        ${kvRow("Name (English)", d.nameEn)}
-        ${kvRow("Date of Birth", d.dob)}
-        ${kvRow("Age", d.age)}
-        ${kvRow("Myanmar Address", d.addrMm)}
-        ${kvRow("Overseas Address", d.addrOs)}
-        ${kvRow("NRC / ID Number", d.nrc)}
-        ${kvRow("Passport Number", d.passport)}
-        ${kvRow("Position", d.position)}
-        ${kvRow("Department", d.department)}
-        ${kvRow("Phone", d.phone)}
-        ${kvRow("Email", d.email)}
-        ${kvRow("Telegram ID", d.telegram)}
-        ${kvRow("Work Start Date", d.startDate)}
-        ${kvRow("Branch / Office", d.branch)}
-        ${kvRow("Photo URL", d.photoUrl || "(auto) " + photo)}
-      ` : `
-        ${kvRow("Staff ID", d.staffId || staffParam)}
-        ${kvRow("Name (Myanmar)", d.nameMm)}
-        ${kvRow("Name (English)", d.nameEn)}
-        ${kvRow("Position", d.position)}
-        ${kvRow("Department", d.department)}
-        ${kvRow("Branch / Office", d.branch)}
-        ${kvRow("Work Start Date", d.startDate)}
-      `;
-
-      publicView.innerHTML = `
-        <div class="warnBox tiny">
-          ⚠️ FULL PUBLIC view is ON. To hide sensitive data, set <code>FULL_PUBLIC_VIEW = false</code> in this file.
-        </div>
-        <div class="hr"></div>
-        ${header}
-        <div style="display:grid;gap:10px">${body}</div>
-      `;
-    }
-  }catch(e){
-    console.error(e);
-    publicView.innerHTML = "<p class='center'>❌ Error loading staff data. Check Firestore rules.</p>";
-  }
-}
-
-/* ---------- ADMIN MODE ---------- */
-else {
-  adminView.classList.remove("hide");
-
-  const debug = document.getElementById("debug");
-  debug.textContent = `Site base: ${SITE_BASE}`;
-
-  const who = document.getElementById("who");
-  const signOutBtn = document.getElementById("signOutBtn");
-  const openPublicBtn = document.getElementById("openPublicBtn");
-
-  const email = document.getElementById("email");
-  const password = document.getElementById("password");
-  const loginBtn = document.getElementById("loginBtn");
-  const resetBtn = document.getElementById("resetBtn");
-  const loginBox = document.getElementById("loginBox");
-  const adminBox = document.getElementById("adminBox");
-
-  const staffId = document.getElementById("staffId");
-  const status = document.getElementById("status");
-  const nameMm = document.getElementById("nameMm");
-  const nameEn = document.getElementById("nameEn");
-  const dob = document.getElementById("dob");
-  const age = document.getElementById("age");
-  const addrMm = document.getElementById("addrMm");
-  const addrOs = document.getElementById("addrOs");
-  const nrc = document.getElementById("nrc");
-  const passport = document.getElementById("passport");
-  const position = document.getElementById("position");
-  const department = document.getElementById("department");
-  const phone = document.getElementById("phone");
-  const staffEmail = document.getElementById("staffEmail");
-  const telegram = document.getElementById("telegram");
-  const startDate = document.getElementById("startDate");
-  const branch = document.getElementById("branch");
-  const photoUrlInput = document.getElementById("photoUrl");
-  const preview = document.getElementById("preview");
-  const photoInfo = document.getElementById("photoInfo");
-
-  const loadBtn = document.getElementById("loadBtn");
-  const saveBtn = document.getElementById("saveBtn");
-  const clearBtn = document.getElementById("clearBtn");
-
-  const qrDiv = document.getElementById("qr");
-  const downloadQR = document.getElementById("downloadQR");
-  const copyLink = document.getElementById("copyLink");
-  const qrLink = document.getElementById("qrLink");
-
-  function currentPublicUrl(){
-    const id = (staffId.value||"").trim();
-    if(!id) return "";
-    return `${location.origin}${location.pathname}?id=${encodeURIComponent(id)}`;
-  }
-
-  async function renderQR(){
-    const url = currentPublicUrl();
-    qrDiv.innerHTML = "";
-    qrLink.textContent = url ? url : "";
-    if(!url) return;
-
-    const canvas = document.createElement("canvas");
-    await QRCode.toCanvas(canvas, url, { width: 220, margin: 1 });
-    qrDiv.appendChild(canvas);
-
-    downloadQR.onclick = () => {
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = `QR_${(staffId.value||"STAFF").trim()}.png`;
-      a.click();
-    };
-  }
-
-  function refreshPhotoPreview(){
-    const id = (staffId.value||"").trim();
-    const url = (photoUrlInput.value||"").trim() || (id ? defaultPhotoUrlFor(id) : "");
-    if(url){
-      preview.src = url;
-      photoInfo.textContent = `Using: ${url}`;
-    }else{
-      preview.src = "";
-      photoInfo.textContent = "No photo URL yet";
-    }
-  }
-
-  staffId.addEventListener("input", ()=>{ renderQR(); refreshPhotoPreview(); });
-  photoUrlInput.addEventListener("input", refreshPhotoPreview);
-  renderQR();
-  refreshPhotoPreview();
-
-  copyLink.addEventListener("click", async ()=>{
-    const url = currentPublicUrl();
-    if(!url) return alert("Enter Staff ID first");
-    await navigator.clipboard.writeText(url);
-    alert("Copied link");
-  });
-
-  openPublicBtn.addEventListener("click", ()=>{
-    const url = currentPublicUrl();
-    if(!url) return alert("Enter Staff ID first");
-    window.open(url, "_blank", "noopener");
-  });
-
-  function clearForm(){
-    staffId.value = "";
-    status.value = "ACTIVE";
-    nameMm.value = "";
-    nameEn.value = "";
-    dob.value = "";
-    age.value = "";
-    addrMm.value = "";
-    addrOs.value = "";
-    nrc.value = "";
-    passport.value = "";
-    position.value = "";
-    department.value = "";
-    phone.value = "";
-    staffEmail.value = "";
-    telegram.value = "";
-    startDate.value = "";
-    branch.value = "";
-    photoUrlInput.value = "";
-    preview.src = "";
-    photoInfo.textContent = "No photo URL yet";
-    renderQR();
-    refreshPhotoPreview();
-  }
-  clearBtn.addEventListener("click", clearForm);
-
-  loginBtn.addEventListener("click", async ()=>{
-    try{ await signInWithEmailAndPassword(auth, email.value.trim(), password.value); }
-    catch(e){ console.error(e); alert("Login failed"); }
-  });
-
-  resetBtn.addEventListener("click", async ()=>{
-    try{
-      const em = email.value.trim();
-      if(!em) return alert("Enter email first");
-      await sendPasswordResetEmail(auth, em);
-      alert("Reset email sent");
-    }catch(e){ console.error(e); alert("Reset failed"); }
-  });
-
-  signOutBtn.addEventListener("click", async ()=>{ await signOut(auth); });
-
-  onAuthStateChanged(auth, (user)=>{
-    if (!user){
-      who.textContent = "Not signed in";
-      loginBox.classList.remove("hide");
-      adminBox.classList.add("hide");
-      return;
-    }
-    who.textContent = `Signed in: ${user.email || user.uid}`;
-    loginBox.classList.add("hide");
-    adminBox.classList.remove("hide");
-  });
-
-  loadBtn.addEventListener("click", async ()=>{
-    const id = (staffId.value||"").trim();
-    if(!id) return alert("Enter Staff ID first");
-    const snap = await getDoc(doc(db, "staff", id));
-    if(!snap.exists()) return alert("Staff not found");
+  const snap = await getDoc(doc(db, "staff", staffParam));
+  if (!snap.exists()) {
+    publicView.innerHTML = "<p class='center'>Staff not found</p>";
+  } else {
     const d = snap.data();
-
-    status.value = (d.status || "ACTIVE").toUpperCase();
-    nameMm.value = d.nameMm || "";
-    nameEn.value = d.nameEn || "";
-    dob.value = d.dob || "";
-    age.value = d.age || "";
-    addrMm.value = d.addrMm || "";
-    addrOs.value = d.addrOs || "";
-    nrc.value = d.nrc || "";
-    passport.value = d.passport || "";
-    position.value = d.position || "";
-    department.value = d.department || "";
-    phone.value = d.phone || "";
-    staffEmail.value = d.email || "";
-    telegram.value = d.telegram || "";
-    startDate.value = d.startDate || "";
-    branch.value = d.branch || "";
-    photoUrlInput.value = d.photoUrl || "";
-    renderQR();
-    refreshPhotoPreview();
-  });
-
-  saveBtn.addEventListener("click", async ()=>{
-    const id = (staffId.value||"").trim();
-    if(!id) return alert("Staff ID required");
-
-    // Photo URL strategy: use input URL if provided, otherwise auto /photos/{id}.jpg
-    const inputUrl = (photoUrlInput.value||"").trim();
-    const photoUrl = inputUrl || defaultPhotoUrlFor(id);
-
-    try{
-      await setDoc(doc(db, "staff", id), {
-        staffId: id,
-        status: (status.value||"ACTIVE").toUpperCase(),
-        nameMm: nameMm.value.trim(),
-        nameEn: nameEn.value.trim(),
-        dob: dob.value.trim(),
-        age: age.value.trim(),
-        addrMm: addrMm.value.trim(),
-        addrOs: addrOs.value.trim(),
-        nrc: nrc.value.trim(),
-        passport: passport.value.trim(),
-        position: position.value.trim(),
-        department: department.value.trim(),
-        phone: phone.value.trim(),
-        email: staffEmail.value.trim(),
-        telegram: telegram.value.trim(),
-        startDate: startDate.value.trim(),
-        branch: branch.value.trim(),
-        photoUrl: inputUrl, // store only if you explicitly set; otherwise leave blank
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
-
-      refreshPhotoPreview();
-      alert("✅ Saved");
-    }catch(e){
-      console.error(e);
-      alert("❌ Save failed. Check Firestore rules / login.");
-    }
-  });
+    const photo = d.photoUrl || `${location.origin}${location.pathname.replace(/\/[^\/]*$/, "")}/photos/${staffParam}.jpg`;
+    publicView.innerHTML = `
+      <div class="center">
+        <img src="${photo}" class="avatar"><br><br>
+        <b>${d.nameEn || ""}</b><br>
+        ${d.position || ""}<br>
+        ${d.branch || ""}
+      </div>
+    `;
+  }
+} else {
+  adminView.classList.remove("hide");
 }
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById("loginBox").classList.add("hide");
+    document.getElementById("adminBox").classList.remove("hide");
+  }
+});
+
+document.getElementById("loginBtn").onclick = async () => {
+  await signInWithEmailAndPassword(auth, email.value, password.value);
+};
+
+document.getElementById("signOutBtn").onclick = () => signOut(auth);
+
+document.getElementById("photoUrl").oninput = e => {
+  document.getElementById("preview").src = e.target.value;
+};
+
+document.getElementById("saveBtn").onclick = async () => {
+  const id = staffId.value.trim();
+  const photoUrl = photoUrl.value.trim();
+  await setDoc(doc(db, "staff", id), {
+    nameEn: nameEn.value,
+    position: position.value,
+    branch: branch.value,
+    photoUrl
+  }, { merge: true });
+  alert("Saved");
+};
 </script>
 </body>
 </html>
